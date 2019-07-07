@@ -1,10 +1,13 @@
 package com.timbuchalka.contentproviderexample;
 
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -76,8 +79,30 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                 } else {
-                    Snackbar.make(view, "Please grant access to your Contacts", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
+                    Snackbar.make(view, "This app can't display your Contacts records unless you grant access", Snackbar.LENGTH_INDEFINITE)
+                            .setAction("Grant Access", new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            Log.d(TAG, "Snackbar onClick: starts");
+                                            if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, READ_CONTACTS)) {
+                                                Log.d(TAG, "Snackbar onClick: calling requestPermissions");
+                                                ActivityCompat.requestPermissions(MainActivity.this, new String[] {READ_CONTACTS}, REQUEST_CODE_READ_CONTACTS);
+                                            } else {
+                                                // The user has permanently denied the permission, so take them to the settings
+                                                Log.d(TAG, "Snackbar onClick: launching settings");
+                                                Intent intent = new Intent();
+                                                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                                Uri uri = Uri.fromParts("package", MainActivity.this.getPackageName(), null);
+                                                Log.d(TAG, "Snackar onClick: Intent Uri is " + uri.toString());
+                                                intent.setData(uri);
+                                                MainActivity.this.startActivity(intent);
+
+                                            }
+                                            Log.d(TAG, "Snackbar onClick: ends");
+                                        }
+                                    }
+
+                            ).show();
                 }
 
                 Log.d(TAG, "fab onClick: ends");
